@@ -4,6 +4,8 @@ namespace CadastroDeCliente.Controllers
 {
     [ApiController]
     [Route("[controller]")]
+    [Consumes("application/json")]
+    [Produces("application/json")]
     public class ClientListController : ControllerBase
     {
         private static readonly string[] Names = new[]
@@ -22,16 +24,16 @@ namespace CadastroDeCliente.Controllers
 
         private static readonly string[] Cpfs = new[]
         {
-            "461.996.853-69",
-            "353.762.873-00",
-            "004.518.138-12",
-            "647.904.657-99",
-            "424.917.960-58",
-            "156.473.163-44",
-            "417.884.354-00",
-            "461.595.592-81",
-            "302.261.592-21",
-            "127.592.585-56"
+            "46199685369",
+            "35376287300",
+            "00451813812",
+            "64790465799",
+            "42491796058",
+            "15647316344",
+            "41788435400",
+            "46159559281",
+            "30226159221",
+            "12759258556"
         };
 
         private readonly ILogger<ClientListController> _logger;
@@ -50,34 +52,44 @@ namespace CadastroDeCliente.Controllers
         }
 
         //https://localhost:7248/ClientList GET
-        [HttpGet]
-        public IEnumerable<ClientList> Get()
+        [HttpGet("/cliente/consultar")]
+        [ProducesResponseType(StatusCodes.Status200OK)]
+        public ActionResult<List<ClientList>> Consultar()
         {
-            return clientes;
+            return Ok(clientes);
         }
 
         //https://localhost:7248/ClientList POST
-        [HttpPost]
-        public ClientList Insert(ClientList newClient)
+        [HttpPost("/cliente/cadastrar")]
+        [ProducesResponseType(StatusCodes.Status201Created)]
+        public ActionResult<List<ClientList>> Insert([FromBody]ClientList newClient)
         {
             clientes.Add(newClient);
-            return newClient;
+            return StatusCode(201, newClient);
         }
-
+ 
         //https://localhost:7248/ClientList PUT
-        [HttpPut]
-        public ClientList Atualizar(int index, ClientList newClient)
+        [HttpPut("/cliente/{index}/atualizar")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public IActionResult Atualizar(int index, ClientList newClient)
         {
+            if (index >= clientes.Count || index < 0)
+                return NotFound();
             clientes[index] = newClient;
-            return clientes[index];
+            return NoContent();
         }
 
         //https://localhost:7248/ClientList DELETE
-        [HttpDelete]
-        public List<ClientList> Deletar(int index)
+        [HttpDelete("/cliente/{index}/deletar")]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        public IActionResult Deletar(int index)
         {
+            if (index >= clientes.Count || index < 0)
+                return NotFound();
             clientes.RemoveAt(index);
-            return clientes;
+            return NoContent();
         }
     }
 }
