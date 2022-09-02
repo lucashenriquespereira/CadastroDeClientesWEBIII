@@ -1,3 +1,4 @@
+using CadastroDeClientesWEBIII.Repository;
 using Microsoft.AspNetCore.Mvc;
 
 namespace CadastroDeCliente.Controllers
@@ -8,87 +9,60 @@ namespace CadastroDeCliente.Controllers
     [Produces("application/json")]
     public class ClientListController : ControllerBase
     {
-        private static readonly string[] Names = new[]
-        {
-            "Amanda Alice Gonçalves",
-            "Daniel Daniel Oliveira",
-            "Vanessa Sarah Emily Martins",
-            "Jéssica Bruna Silveira",
-            "Eduarda Evelyn Nicole Drumond",
-            "Augusto Yago Assis",
-            "Cecília Valentina Carvalho",
-            "André Julio Almeida",
-            "Matheus Ryan Araújo",
-            "Sônia Alessandra dos Santos"
-    };
-
-        private static readonly string[] Cpfs = new[]
-        {
-            "46199685369",
-            "35376287300",
-            "00451813812",
-            "64790465799",
-            "42491796058",
-            "15647316344",
-            "41788435400",
-            "46159559281",
-            "30226159221",
-            "12759258556"
-        };
-
-        private readonly ILogger<ClientListController> _logger;
         public List<ClientList> clientes { get; set; }
 
-        public ClientListController(ILogger<ClientListController> logger)
+        private ClientRepository _repositoryClient { get; set; }
+
+        public ClientListController(IConfiguration configuration)
         {
-            _logger = logger;
-            clientes = Enumerable.Range(1, 5).Select(index => new ClientList
-            {
-                Name = Names[Random.Shared.Next(Names.Length)],
-                CPF = Cpfs[Random.Shared.Next(Cpfs.Length)],
-                Birthday = DateTime.Now.AddYears(Random.Shared.Next(-55, -20))
-            })
-            .ToList();
+            clientes = new List<ClientList>();
+            _repositoryClient = new ClientRepository(configuration);
         }
 
-        //https://localhost:7248/ClientList GET
+        //https://localhost:7248/ClientList **GET
         [HttpGet("/cliente/consultar")]
         [ProducesResponseType(StatusCodes.Status200OK)]
         public ActionResult<List<ClientList>> Consultar()
         {
-            return Ok(clientes);
+            return Ok(_repositoryClient.GetClientes());
         }
 
-        //https://localhost:7248/ClientList POST
+        //https://localhost:7248/ClientList **POST
         [HttpPost("/cliente/cadastrar")]
         [ProducesResponseType(StatusCodes.Status201Created)]
-        public ActionResult<List<ClientList>> Insert([FromBody]ClientList newClient)
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public ActionResult<ClientList> Insert([FromBody]ClientList clientList)
         {
-            clientes.Add(newClient);
-            return StatusCode(201, newClient);
+            if(!_repositoryClient.InsertClientes(clientList))
+            {
+                return BadRequest();
+            }
+            return CreatedAtAction(nameof(Insert), clientList);
         }
  
-        //https://localhost:7248/ClientList PUT
+        //https://localhost:7248/ClientList **PUT
         [HttpPut("/cliente/{index}/atualizar")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
-        public IActionResult Atualizar(int index, ClientList newClient)
+        public IActionResult Atualizar(long id, ClientList clientList)
         {
-            if (index >= clientes.Count || index < 0)
+            if (!_repositoryClient.UpdateClientes(id, clientList))
+            {
                 return NotFound();
-            clientes[index] = newClient;
+            }
             return NoContent();
         }
 
-        //https://localhost:7248/ClientList DELETE
+        //https://localhost:7248/ClientList **DELETE
         [HttpDelete("/cliente/{index}/deletar")]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
-        public IActionResult Deletar(int index)
+        public IActionResult Deletar(long id)
         {
-            if (index >= clientes.Count || index < 0)
+            if (!_repositoryClient.DeleteClientes(id))
+            {
                 return NotFound();
-            clientes.RemoveAt(index);
+            }
             return NoContent();
         }
     }

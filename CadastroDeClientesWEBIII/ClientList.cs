@@ -16,5 +16,7 @@ namespace CadastroDeCliente
         public DateTime Birthday { get; set; }
 
         public int Age => DateTime.Now.Year - Birthday.Year;
+
+        public long Id { get; set; }
     }
 }
