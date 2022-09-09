@@ -47,6 +47,7 @@ namespace CadastroDeClientesWEBIII.Controllers
         [ProducesResponseType(StatusCodes.Status201Created)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [TypeFilter(typeof(LogActionFilter))]
+        [ServiceFilter(typeof(GaranteCPFExisteActionFilters))]
         public ActionResult<Cliente> PostCliente(Cliente cliente)
         {
             Console.WriteLine("Iniciando");
@@ -63,6 +64,7 @@ namespace CadastroDeClientesWEBIII.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [TypeFilter(typeof(LogActionFilter))]
         [ServiceFilter(typeof(GaranteClienteExisteActionFilters))]
+        [ServiceFilter(typeof(VerificarUpdateClienteActionFilters))]
         public IActionResult UpdateCliente(long id, Cliente cliente)
         {
             Console.WriteLine("Iniciando");
